@@ -13,12 +13,12 @@ body.theme-record #bubbleLayer,
 body.theme-record #qsLayer { display: none !important; }
 .record-deck {
   position: absolute;
-  left: 34%;
-  top: 64%;
-  width: calc(190 * var(--s));
-  height: calc(190 * var(--s));
+  left: 50%;
+  top: 85%;
+  width: calc(142 * var(--s));
+  height: calc(142 * var(--s));
   transform: translate(-50%, -50%) rotate(-14deg);
-  opacity: 0.52;
+  opacity: 0.26;
 }
 .record-vinyl {
   position: absolute;
@@ -67,16 +67,17 @@ body.theme-record #qsLayer { display: none !important; }
 }
 .record-arm::after { content: ''; position: absolute; right: calc(-3 * var(--s)); bottom: 0; width: calc(6 * var(--s)); height: calc(14 * var(--s)); border-radius: calc(3 * var(--s)); background: var(--accent, #39c5bb); opacity: .5; }
 .record-speck { position: absolute; left: 115%; top: 52%; width: calc(4 * var(--s)); height: calc(4 * var(--s)); border-radius: 50%; background: var(--accent, #39c5bb); box-shadow: 0 0 calc(18 * var(--s)) var(--accent, #39c5bb); opacity: 0.4; }
-.record-voices { position: absolute; left: 55%; top: 44%; width: min(72vw, calc(1350 * var(--s))); transform: translateX(-50%); }
+.record-voices { position: absolute; inset: 0; }
 .record-voice {
   position: absolute;
-  left: 0; top: 0; width: 100%;
+  left: 0; top: 0; width: min(72vw, calc(1350 * var(--s)));
   text-align: center;
-  transform: translate3d(0,-50%,0) rotate(-0.6deg);
-  animation: recordLyricIn 1.45s var(--ease, ease-out) both;
+  opacity: 0;
   will-change: transform, opacity;
 }
 .record-main {
+  display: inline-block;
+  max-width: 100%;
   font-family: inherit;
   font-size: calc(68 * var(--s) * var(--record-fit, 1));
   font-weight: 500;
@@ -89,23 +90,13 @@ body.theme-record #qsLayer { display: none !important; }
 }
 .record-char { display: inline-block; animation: recordLetterFloat 5.8s ease-in-out infinite alternate; animation-delay: var(--letter-delay, 0s); }
 .record-sub { font-family: inherit; margin-top: calc(18 * var(--s)); font-size: calc(28 * var(--s)); letter-spacing: .08em; line-height: 1.6; color: rgba(239,255,249,.65); text-shadow: 0 calc(3 * var(--s)) calc(12 * var(--s)) rgba(0,0,0,.4); }
-.record-voice.is-retiring { animation: recordLyricOut 1.75s ease-out both; }
-.record-voice.is-retiring .record-main { color: rgba(229,251,242,.55); }
+.record-voice.is-retiring .record-main { color: color-mix(in srgb, var(--accent, #39c5bb) 45%, #f2fff9); }
 .record-layer.is-paused .record-vinyl,
 .record-layer.is-paused .record-char { animation-play-state: paused; }
 .record-empty { position: absolute; left: 55%; top: 44%; transform: translate(-50%, -50%); font-size: calc(24 * var(--s)); letter-spacing: .16em; color: rgba(222,251,240,.38); }
 body.clean-wallpaper #recordLyrics { display: none !important; }
 @keyframes recordTurn { to { transform: rotate(360deg); } }
 @keyframes recordLetterFloat { from { transform: translateY(calc(-2 * var(--s))) rotate(-.8deg); } to { transform: translateY(calc(3 * var(--s))) rotate(.8deg); } }
-@keyframes recordLyricIn {
-  from { opacity: 0; transform: translate3d(-17vw,15vh,0) scale(.68) rotate(-5deg); }
-  55% { opacity: .7; }
-  to { opacity: 1; transform: translate3d(0,-50%,0) scale(1) rotate(-.6deg); }
-}
-@keyframes recordLyricOut {
-  from { opacity: 1; transform: translate3d(0,-50%,0) rotate(-.6deg); }
-  to { opacity: 0; transform: translate3d(3vw,-23vh,0) scale(.94) rotate(2deg); }
-}
 @media (prefers-reduced-motion: reduce) {
   .record-vinyl, .record-char { animation: none !important; }
   .record-voice { animation-duration: .15s; }

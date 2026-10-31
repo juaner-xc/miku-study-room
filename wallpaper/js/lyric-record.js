@@ -2,7 +2,8 @@
 (function () {
   'use strict';
   var layer, voices, empty, current, lastIndex = -2, lastTime = 0, active = false;
-  var source = null, lines = [], fontKey = '', pending = [];
+  var source = null, lines = [], fontKey = '', flights = [], flightClock = 0, metrics;
+  var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
 
   function ensure() {
     if (layer) return;
@@ -20,6 +21,7 @@
     voices = layer.querySelector('.record-voices');
     empty = layer.querySelector('.record-empty');
     document.body.appendChild(layer);
+    addEventListener('resize', function () { metrics = null; });
     new MutationObserver(syncFont).observe(document.body, { attributes: true, attributeFilter: ['class'] });
     syncFont();
   }
@@ -32,11 +34,12 @@
     fontKey = key;
   }
   function reset() {
-    pending.forEach(clearTimeout);
-    pending = [];
+    flights = [];
+    flightClock = 0;
     if (voices) voices.replaceChildren();
     current = null;
     lastIndex = -2;
+    metrics = null;
   }
   function setLyrics(value) {
     if (source === value) return;
@@ -88,14 +91,44 @@
     }
     return row;
   }
-  function retire(row) {
-    row.classList.add('is-retiring');
-    row.setAttribute('aria-hidden', 'true');
-    var timer = setTimeout(function () {
-      row.remove();
-      pending = pending.filter(function (id) { return id !== timer; });
-    }, 1800);
-    pending.push(timer);
+  function geometry() {
+    if (metrics && performance.now() - metrics.measured < 400) return metrics;
+    var player = document.getElementById('player');
+    var play = document.getElementById('play');
+    var r = player && player.getBoundingClientRect();
+    var p = play && play.getBoundingClientRect();
+    var x = p && p.width ? p.left + p.width / 2 : r && r.width ? r.left + r.width / 2 : innerWidth / 2;
+    var y = r && r.height ? r.top - Math.max(8, innerHeight * 0.012) : innerHeight * 0.85;
+    metrics = { x: x, y: y, w: innerWidth, h: innerHeight, measured: performance.now() };
+    layer.querySelector('.record-deck').style.left = x + 'px';
+    layer.querySelector('.record-deck').style.top = y + 'px';
+    return metrics;
+  }
+  function smooth(value) { return value * value * (3 - 2 * value); }
+  function paintFlights() {
+    var g = geometry();
+    flights = flights.filter(function (flight) {
+      var progress = (flightClock - flight.born) / flight.life;
+      if (progress >= 1) { flight.row.remove(); return false; }
+      progress = Math.max(0, progress);
+      var angle = progress * Math.PI * 2 * 1.05;
+      var envelope = Math.pow(Math.sin(progress * Math.PI), 0.85);
+      var radius = Math.min(g.w * 0.16, Math.max(28, g.w / 2 - flight.width * 0.6 - 30));
+      var axis = g.x + (g.w / 2 - g.x) * smooth(progress);
+      var x = axis + Math.sin(angle) * radius * envelope;
+      var rise = Math.max(g.h * 0.5, g.y - g.h * 0.19);
+      var y = g.y - rise * progress + Math.sin(angle * 2) * g.h * 0.022 * envelope;
+      var scale = (0.57 + 0.5 * Math.sin(Math.PI * Math.min(0.76, progress))) * (1 + 0.055 * Math.cos(angle));
+      var half = Math.min(g.w * 0.45, flight.width * scale / 2 + 18);
+      x = Math.max(half, Math.min(g.w - half, x));
+      var fadeIn = smooth(Math.min(1, progress / 0.14));
+      var fadeOut = 1 - smooth(Math.max(0, Math.min(1, (progress - 0.67) / 0.33)));
+      var opacity = fadeIn * fadeOut * (0.78 + 0.22 * (Math.cos(angle) + 1) / 2);
+      if (reduceMotion.matches) { x = g.w / 2; y = g.h * 0.44 - progress * g.h * 0.035; scale = 1; }
+      flight.row.style.transform = 'translate3d(' + x.toFixed(2) + 'px,' + y.toFixed(2) + 'px,0) translate(-50%,-50%) rotate(' + (Math.sin(angle) * 2.2).toFixed(2) + 'deg) scale(' + scale.toFixed(4) + ')';
+      flight.row.style.opacity = opacity.toFixed(4);
+      return true;
+    });
   }
   function update(time, playing) {
     if (!active) return;
@@ -104,17 +137,26 @@
     var index = indexAt(time);
     empty.textContent = lines.length ? '前奏 · 等待落针' : '等待歌词落针';
     empty.hidden = index >= 0;
-    if (index === lastIndex) { lastTime = time; return; }
+    if (lastIndex !== -2 && playing) flightClock += Math.max(0, time - lastTime);
+    if (index === lastIndex) { paintFlights(); lastTime = time; return; }
     var seek = lastIndex >= 0 && (Math.abs(index - lastIndex) > 1 || time < lastTime - 0.5);
     if (seek) reset();
-    else if (current) retire(current);
+    else if (current) {
+      current.classList.add('is-retiring');
+      current.setAttribute('aria-hidden', 'true');
+    }
     current = null;
     if (index >= 0) {
       current = makeVoice(lines[index], index);
       voices.appendChild(current);
-      // At most one arriving line and two fading lines, even for dense lyrics.
-      while (voices.children.length > 3) voices.firstElementChild.remove();
+      var next = lines[index + 1];
+      var gap = next ? Math.max(1, next.t - lines[index].t) : 5;
+      var width = current.querySelector('.record-main').offsetWidth;
+      flights.push({ row: current, born: flightClock, life: Math.max(10, Math.min(16, gap * 1.8 + 5)), width: width });
+      // Preserve a few overlapping spirals without letting dense songs fill the screen.
+      while (flights.length > 3) flights.shift().row.remove();
     }
+    paintFlights();
     lastIndex = index;
     lastTime = time;
   }
