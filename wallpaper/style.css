@@ -1,0 +1,794 @@
+/* ------------------------------------------------------------------
+   Miku Study Room · Wallpaper Engine web wallpaper
+   设计基准 2560 × 1440，尺寸统一用 --s 缩放
+------------------------------------------------------------------ */
+
+:root {
+  --s: min(0.0390625vw, 0.069444vh);
+
+  --accent: #39c5bb;
+  --pink: #ff7bac;
+  --text: #f2fbfa;
+  --muted: rgba(226, 248, 245, 0.55);
+  --glass: rgba(9, 17, 20, 0.46);
+  --line: rgba(255, 255, 255, 0.12);
+  --ease: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: #04080a;
+}
+
+body {
+  font-family: "Microsoft YaHei UI", "Microsoft YaHei", "Yu Gothic UI",
+               "PingFang SC", "Segoe UI", system-ui, sans-serif;
+  color: var(--text);
+  -webkit-font-smoothing: antialiased;
+  user-select: none;
+}
+
+/* ---------------- 背景 ---------------- */
+
+.bg {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  z-index: 0;
+  opacity: 0;
+  transition: opacity 1.1s var(--ease);
+  pointer-events: none;
+}
+
+.bg.ready { opacity: 1; }
+
+.bg-still {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  z-index: 0;
+  opacity: 0.98;
+  transition: opacity 0.8s var(--ease);
+  pointer-events: none;
+}
+
+.bg-fallback {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  background:
+    radial-gradient(90% 70% at 70% 20%, #1d4a52 0%, transparent 60%),
+    radial-gradient(80% 60% at 20% 80%, #0f2b33 0%, transparent 65%),
+    linear-gradient(160deg, #071013, #04080a 70%);
+}
+
+.veil {
+  position: fixed;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background:
+    linear-gradient(to bottom,
+      rgba(3, 8, 10, 0.62) 0%,
+      rgba(3, 8, 10, 0.12) 24%,
+      rgba(3, 8, 10, 0.06) 52%,
+      rgba(3, 8, 10, 0.66) 100%),
+    radial-gradient(90% 70% at 50% 45%, transparent 42%, rgba(3, 8, 10, 0.5) 100%),
+    radial-gradient(58% 46% at 50% 52%, rgba(3, 8, 10, 0.42), transparent 74%);
+}
+
+#spectrum {
+  position: fixed;
+  left: 0;
+  bottom: 0;
+  width: 100%;
+  height: calc(170 * var(--s));
+  z-index: 2;
+  pointer-events: none;
+  opacity: 0.5;
+  -webkit-mask-image: linear-gradient(to top, #000 40%, transparent 100%);
+  mask-image: linear-gradient(to top, #000 40%, transparent 100%);
+}
+
+/* ---------------- 顶栏 ---------------- */
+
+.hud {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 6;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: calc(34 * var(--s)) calc(46 * var(--s));
+  pointer-events: none;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: calc(12 * var(--s));
+  font-size: calc(13 * var(--s));
+  letter-spacing: 0.26em;
+  color: rgba(210, 250, 246, 0.55);
+}
+
+.dot {
+  width: calc(6 * var(--s));
+  height: calc(6 * var(--s));
+  border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 0 calc(14 * var(--s)) var(--accent);
+  animation: pulse 3s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 0.5; transform: scale(0.9); }
+  50%      { opacity: 1; transform: scale(1.15); }
+}
+
+.pomodoro {
+  position: absolute;
+  left: 50%;
+  top: calc(28 * var(--s));
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: calc(10 * var(--s));
+  padding: calc(8 * var(--s)) calc(22 * var(--s)) calc(8 * var(--s)) calc(10 * var(--s));
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(6, 14, 16, 0.5);
+  backdrop-filter: blur(18px) saturate(1.2);
+  box-shadow: 0 calc(14 * var(--s)) calc(40 * var(--s)) rgba(0, 0, 0, 0.35);
+  cursor: pointer;
+  pointer-events: auto;
+  transition: border-color 0.3s ease, background 0.3s ease;
+}
+
+.pomodoro:hover { border-color: rgba(57, 197, 187, 0.45); }
+.pomodoro.running { border-color: rgba(57, 197, 187, 0.35); }
+.pomodoro.break { border-color: rgba(255, 123, 172, 0.35); }
+
+.ring {
+  width: calc(36 * var(--s));
+  height: calc(36 * var(--s));
+  transform: rotate(-90deg);
+}
+
+.ring-bg {
+  fill: none;
+  stroke: rgba(255, 255, 255, 0.12);
+  stroke-width: 2.6;
+}
+
+.ring-fg {
+  fill: none;
+  stroke: var(--accent);
+  stroke-width: 2.6;
+  stroke-linecap: round;
+  stroke-dasharray: 119.4;
+  stroke-dashoffset: 0;
+  transition: stroke-dashoffset 0.9s linear, stroke 0.4s ease;
+}
+
+.pomodoro.break .ring-fg { stroke: var(--pink); }
+
+.pomo-text {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.1;
+}
+
+.pomo-time {
+  font-size: calc(23 * var(--s));
+  font-weight: 300;
+  letter-spacing: 0.08em;
+  font-variant-numeric: tabular-nums;
+}
+
+.pomo-label {
+  font-size: calc(10 * var(--s));
+  letter-spacing: 0.3em;
+  color: var(--muted);
+  margin-top: calc(2 * var(--s));
+}
+
+.hud-right {
+  display: flex;
+  gap: calc(10 * var(--s));
+  pointer-events: auto;
+}
+
+.chip {
+  display: flex;
+  align-items: center;
+  gap: calc(7 * var(--s));
+  height: calc(38 * var(--s));
+  padding: 0 calc(16 * var(--s));
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(6, 14, 16, 0.42);
+  backdrop-filter: blur(14px);
+  color: rgba(235, 255, 252, 0.78);
+  font-family: inherit;
+  font-size: calc(13 * var(--s));
+  letter-spacing: 0.08em;
+  cursor: pointer;
+  transition: background 0.25s ease, border-color 0.25s ease, transform 0.25s var(--ease);
+}
+
+.chip:hover {
+  background: rgba(57, 197, 187, 0.16);
+  border-color: rgba(57, 197, 187, 0.45);
+  transform: translateY(calc(-1 * var(--s)));
+}
+
+.chip svg { width: calc(16 * var(--s)); height: calc(16 * var(--s)); }
+
+.mode-dot {
+  width: calc(7 * var(--s));
+  height: calc(7 * var(--s));
+  border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 0 calc(10 * var(--s)) var(--accent);
+}
+
+body.mirror .mode-dot { background: var(--pink); box-shadow: 0 0 calc(10 * var(--s)) var(--pink); }
+
+/* ---------------- 歌词 ---------------- */
+
+.lyrics-area {
+  position: fixed;
+  inset: 0;
+  z-index: 3;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+
+.lyrics-viewport {
+  height: 58vh;
+  width: min(calc(1400 * var(--s)), 76vw);
+  overflow: hidden;
+  position: relative;
+  -webkit-mask-image: linear-gradient(to bottom, transparent 0%, #000 22%, #000 78%, transparent 100%);
+  mask-image: linear-gradient(to bottom, transparent 0%, #000 22%, #000 78%, transparent 100%);
+}
+
+.lyrics {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  text-align: center;
+  transition: transform 0.6s var(--ease);
+  will-change: transform;
+}
+
+.line {
+  font-size: calc(32 * var(--s));
+  line-height: 1.55;
+  padding: calc(8 * var(--s)) 0;
+  color: rgba(232, 252, 249, 0.22);
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  filter: blur(1.4px);
+  transition: color 0.4s ease, font-size 0.45s var(--ease),
+              filter 0.4s ease, opacity 0.4s ease;
+  text-shadow: 0 calc(4 * var(--s)) calc(18 * var(--s)) rgba(0, 0, 0, 0.5);
+}
+
+.line.active {
+  font-size: calc(52 * var(--s));
+  color: #ffffff;
+  filter: none;
+  text-shadow:
+    0 0 calc(34 * var(--s)) rgba(57, 197, 187, 0.45),
+    0 calc(6 * var(--s)) calc(26 * var(--s)) rgba(0, 0, 0, 0.65);
+}
+
+.line.past { opacity: 0.55; }
+
+.lyrics-empty {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  font-size: calc(15 * var(--s));
+  letter-spacing: 0.18em;
+  color: rgba(255, 255, 255, 0.35);
+  display: none;
+  text-align: center;
+  line-height: 2;
+}
+
+body.no-lyrics .lyrics-empty { display: block; }
+
+/* ---------------- 播放器 ---------------- */
+
+.player {
+  position: fixed;
+  left: 50%;
+  bottom: calc(118 * var(--s));
+  transform: translateX(-50%);
+  z-index: 7;
+  width: calc(690 * var(--s));
+  display: flex;
+  align-items: center;
+  gap: calc(18 * var(--s));
+  padding: calc(15 * var(--s)) calc(20 * var(--s));
+  border-radius: calc(22 * var(--s));
+  border: 1px solid rgba(255, 255, 255, 0.13);
+  background: var(--glass);
+  backdrop-filter: blur(22px) saturate(1.3);
+  box-shadow:
+    0 calc(30 * var(--s)) calc(80 * var(--s)) rgba(0, 0, 0, 0.55),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+.cover-wrap {
+  position: relative;
+  width: calc(76 * var(--s));
+  height: calc(76 * var(--s));
+  flex: 0 0 auto;
+  border-radius: calc(14 * var(--s));
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.06);
+  box-shadow: 0 calc(10 * var(--s)) calc(26 * var(--s)) rgba(0, 0, 0, 0.45);
+}
+
+#cover {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  opacity: 0;
+  transition: opacity 0.6s ease;
+}
+
+body.has-cover #cover { opacity: 1; }
+
+.cover-ph {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  font-size: calc(30 * var(--s));
+  color: rgba(255, 255, 255, 0.28);
+  transition: opacity 0.4s ease;
+}
+
+body.has-cover .cover-ph { opacity: 0; }
+
+.meta {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.meta-top {
+  display: flex;
+  align-items: center;
+  gap: calc(10 * var(--s));
+}
+
+.title {
+  flex: 1 1 auto;
+  font-size: calc(21 * var(--s));
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.source {
+  flex: 0 0 auto;
+  font-size: calc(10 * var(--s));
+  letter-spacing: 0.16em;
+  color: var(--accent);
+  border: 1px solid rgba(57, 197, 187, 0.4);
+  border-radius: 999px;
+  padding: calc(2 * var(--s)) calc(8 * var(--s));
+}
+
+body.mirror .source {
+  color: var(--pink);
+  border-color: rgba(255, 123, 172, 0.45);
+}
+
+.artist {
+  margin-top: calc(2 * var(--s));
+  font-size: calc(13 * var(--s));
+  color: var(--muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.bar {
+  position: relative;
+  height: calc(2 * var(--s));
+  margin-top: calc(11 * var(--s));
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.14);
+  overflow: hidden;
+}
+
+.bar-fill {
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 0%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--accent), var(--pink));
+  box-shadow: 0 0 calc(12 * var(--s)) rgba(57, 197, 187, 0.6);
+  transition: width 0.25s linear;
+}
+
+.times {
+  display: flex;
+  justify-content: space-between;
+  margin-top: calc(5 * var(--s));
+  font-size: calc(10 * var(--s));
+  letter-spacing: 0.12em;
+  color: rgba(255, 255, 255, 0.38);
+  font-variant-numeric: tabular-nums;
+}
+
+.ctrls {
+  display: flex;
+  align-items: center;
+  gap: calc(7 * var(--s));
+  flex: 0 0 auto;
+}
+
+.ctl {
+  width: calc(40 * var(--s));
+  height: calc(40 * var(--s));
+  border-radius: 50%;
+  border: none;
+  background: rgba(255, 255, 255, 0.075);
+  color: rgba(255, 255, 255, 0.92);
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  padding: 0;
+  transition: background 0.2s ease, transform 0.2s var(--ease);
+}
+
+.ctl svg {
+  width: calc(17 * var(--s));
+  height: calc(17 * var(--s));
+  fill: currentColor;
+  pointer-events: none;
+}
+
+.ctl:hover { background: rgba(255, 255, 255, 0.16); transform: translateY(calc(-1 * var(--s))); }
+.ctl:active { transform: scale(0.94); }
+
+.ctl.play {
+  width: calc(52 * var(--s));
+  height: calc(52 * var(--s));
+  background: var(--accent);
+  color: #04211f;
+  box-shadow: 0 0 calc(26 * var(--s)) rgba(57, 197, 187, 0.45);
+}
+
+.ctl.play svg { width: calc(20 * var(--s)); height: calc(20 * var(--s)); }
+
+.ctl.play:hover { background: #4adbd1; }
+
+.ctl.list {
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  margin-left: calc(2 * var(--s));
+}
+
+.i-pause { display: none; }
+body.playing .i-play { display: none; }
+body.playing .i-pause { display: block; }
+
+/* ---------------- 歌单抽屉 ---------------- */
+
+.drawer {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: calc(100 * var(--s));
+  z-index: 9;
+  width: calc(400 * var(--s));
+  display: flex;
+  flex-direction: column;
+  padding: calc(30 * var(--s)) 0 calc(20 * var(--s));
+  background: rgba(5, 12, 14, 0.76);
+  backdrop-filter: blur(26px) saturate(1.2);
+  border-left: 1px solid rgba(255, 255, 255, 0.1);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  transform: translateX(100%);
+  transition: transform 0.45s var(--ease);
+}
+
+.drawer.open { transform: none; }
+
+.drawer-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 calc(24 * var(--s)) calc(14 * var(--s));
+  font-size: calc(12 * var(--s));
+  letter-spacing: 0.2em;
+  color: var(--muted);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+.close {
+  background: none;
+  border: none;
+  color: rgba(255, 255, 255, 0.6);
+  font-size: calc(22 * var(--s));
+  line-height: 1;
+  cursor: pointer;
+  padding: 0 calc(4 * var(--s));
+}
+
+.playlist {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  list-style: none;
+  margin: 0;
+  padding: calc(6 * var(--s)) 0;
+}
+
+.playlist::-webkit-scrollbar { width: calc(5 * var(--s)); }
+.playlist::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.16);
+  border-radius: 999px;
+}
+
+.playlist li {
+  display: flex;
+  align-items: baseline;
+  gap: calc(10 * var(--s));
+  padding: calc(9 * var(--s)) calc(24 * var(--s));
+  font-size: calc(13 * var(--s));
+  color: rgba(235, 255, 252, 0.72);
+  border-left: 2px solid transparent;
+  cursor: pointer;
+  transition: background 0.2s ease, color 0.2s ease;
+}
+
+.playlist li:hover { background: rgba(255, 255, 255, 0.05); }
+
+.playlist li.active {
+  color: #fff;
+  border-left-color: var(--accent);
+  background: rgba(57, 197, 187, 0.1);
+}
+
+.playlist .idx {
+  flex: 0 0 auto;
+  width: calc(20 * var(--s));
+  font-size: calc(11 * var(--s));
+  color: rgba(255, 255, 255, 0.3);
+  font-variant-numeric: tabular-nums;
+}
+
+.playlist .song { flex: 1 1 auto; min-width: 0; }
+.playlist .song b {
+  display: block;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.playlist .song small {
+  display: block;
+  margin-top: calc(1 * var(--s));
+  font-size: calc(11 * var(--s));
+  color: rgba(255, 255, 255, 0.34);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.drawer-foot {
+  padding: calc(12 * var(--s)) calc(24 * var(--s)) 0;
+  font-size: calc(10 * var(--s));
+  letter-spacing: 0.14em;
+  color: rgba(255, 255, 255, 0.26);
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+/* ---------------- 其他 ---------------- */
+
+.toast {
+  position: fixed;
+  left: 50%;
+  bottom: calc(140 * var(--s));
+  transform: translate(-50%, calc(12 * var(--s)));
+  z-index: 20;
+  padding: calc(11 * var(--s)) calc(22 * var(--s));
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: rgba(6, 14, 16, 0.85);
+  backdrop-filter: blur(16px);
+  color: rgba(255, 255, 255, 0.88);
+  font-size: calc(14 * var(--s));
+  letter-spacing: 0.06em;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease, transform 0.3s var(--ease);
+}
+
+.toast.show { opacity: 1; transform: translate(-50%, 0); }
+
+.start-hint {
+  position: fixed;
+  left: 50%;
+  bottom: calc(252 * var(--s));
+  transform: translateX(-50%);
+  z-index: 8;
+  padding: calc(10 * var(--s)) calc(22 * var(--s));
+  border-radius: 999px;
+  border: 1px solid rgba(57, 197, 187, 0.4);
+  background: rgba(6, 14, 16, 0.66);
+  backdrop-filter: blur(14px);
+  color: rgba(255, 255, 255, 0.82);
+  font-size: calc(14 * var(--s));
+  letter-spacing: 0.08em;
+  white-space: nowrap;
+  pointer-events: none;
+  animation: hintPulse 2.6s ease-in-out infinite;
+  transition: opacity 0.5s ease;
+}
+
+body.playing .start-hint { opacity: 0; }
+body.mirror .start-hint { opacity: 0; }
+
+@keyframes hintPulse {
+  50% { border-color: rgba(57, 197, 187, 0.85); box-shadow: 0 0 calc(24 * var(--s)) rgba(57, 197, 187, 0.25); }
+}
+
+@media (max-aspect-ratio: 1/1) {
+  .lyrics-viewport { width: 86vw; }
+  .line { font-size: calc(36 * var(--s)); }
+  .line.active { font-size: calc(48 * var(--s)); }
+  .player {
+    left: calc(24 * var(--s));
+    right: calc(24 * var(--s));
+    bottom: calc(110 * var(--s));
+    width: auto;
+    transform: none;
+  }
+  .brand { display: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+}
+
+/* ---------------- 静帧缓慢推拉（视频不可用时的动态） ---------------- */
+.bg-still {
+  animation: kenburns 46s ease-in-out infinite alternate;
+  transform-origin: 62% 42%;
+  will-change: transform;
+}
+
+@keyframes kenburns {
+  from { transform: scale(1.02) translate3d(0, 0, 0); }
+  to   { transform: scale(1.13) translate3d(-1.6%, -1.2%, 0); }
+}
+
+/* 歌单翻页按钮 */
+.scroll-pager {
+  display: flex;
+  gap: calc(8 * var(--s));
+  padding: calc(8 * var(--s)) calc(24 * var(--s)) calc(4 * var(--s));
+}
+
+.scroll-pager button {
+  flex: 1 1 0;
+  height: calc(32 * var(--s));
+  border-radius: calc(9 * var(--s));
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: rgba(255, 255, 255, 0.06);
+  color: rgba(235, 255, 252, 0.8);
+  font-family: inherit;
+  font-size: calc(12 * var(--s));
+  letter-spacing: 0.1em;
+  cursor: pointer;
+  transition: background 0.2s ease, border-color 0.2s ease;
+}
+
+.scroll-pager button:hover {
+  background: rgba(57, 197, 187, 0.18);
+  border-color: rgba(57, 197, 187, 0.5);
+}
+
+.scroll-pager button:active { transform: scale(0.97); }
+/* 自定义滚动条（拖滑块） */
+.playlist { scrollbar-width: none; }
+.playlist::-webkit-scrollbar { width: 0 !important; height: 0 !important; display: none !important; }
+
+.scroll-rail {
+  position: absolute;
+  right: calc(7 * var(--s));
+  width: calc(7 * var(--s));
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.06);
+  z-index: 12;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.scroll-thumb {
+  position: absolute;
+  left: 0;
+  width: 100%;
+  min-height: calc(30 * var(--s));
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.30);
+  cursor: pointer;
+}
+
+.scroll-thumb:hover { background: rgba(57, 197, 187, 0.75); }
+
+
+/* ---------------- Folia 风格歌词层 ---------------- */
+.line {
+  font-size: calc(30 * var(--s));
+  opacity: 0.16;
+  filter: blur(4px);
+  transform: scale(0.9);
+  transform-origin: center center;
+  transition: opacity 0.5s var(--ease), filter 0.5s var(--ease),
+              font-size 0.55s var(--ease), transform 0.55s var(--ease),
+              color 0.4s ease;
+}
+
+.line.near {
+  font-size: calc(38 * var(--s));
+  opacity: 0.34;
+  filter: blur(1.6px);
+  transform: scale(0.96);
+}
+
+.line.active {
+  font-size: calc(58 * var(--s));
+  opacity: 1;
+  filter: none;
+  transform: scale(1);
+  letter-spacing: 0.01em;
+}
+
+.line .sub {
+  display: block;
+  margin-top: calc(10 * var(--s));
+  font-size: 0.42em;
+  font-weight: 400;
+  letter-spacing: 0.04em;
+  color: rgba(232, 252, 249, 0.55);
+  filter: none;
+}
+
+.line.active .sub {
+  color: rgba(232, 252, 249, 0.78);
+}
+
+.lyrics-viewport { height: 64vh; }

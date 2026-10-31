@@ -1,0 +1,9 @@
+demo/
+edge-debug/
+tools/
+source/
+_archive-now-playing/
+*.zip
+search.log
+*.log
+.DS_Store
