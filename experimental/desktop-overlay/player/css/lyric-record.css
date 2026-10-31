@@ -70,13 +70,12 @@ body.theme-record #qsLayer { display: none !important; }
 .record-voices { position: absolute; inset: 0; }
 .record-voice {
   position: absolute;
-  left: 0; top: 0; width: min(72vw, calc(1350 * var(--s)));
+  inset: 0;
   text-align: center;
-  opacity: 0;
-  will-change: transform, opacity;
+  pointer-events: none;
 }
 .record-main {
-  display: inline-block;
+  display: contents;
   max-width: 100%;
   font-family: inherit;
   font-size: calc(68 * var(--s) * var(--record-fit, 1));
@@ -88,8 +87,9 @@ body.theme-record #qsLayer { display: none !important; }
   color: color-mix(in srgb, var(--accent, #39c5bb) 72%, #effff9);
   text-shadow: 0 0 calc(24 * var(--s)) rgba(57,197,187,.16), 0 calc(4 * var(--s)) calc(22 * var(--s)) rgba(0,0,0,.38);
 }
-.record-char { display: inline-block; animation: recordLetterFloat 5.8s ease-in-out infinite alternate; animation-delay: var(--letter-delay, 0s); }
-.record-sub { font-family: inherit; margin-top: calc(18 * var(--s)); font-size: calc(28 * var(--s)); letter-spacing: .08em; line-height: 1.6; color: rgba(239,255,249,.65); text-shadow: 0 calc(3 * var(--s)) calc(12 * var(--s)) rgba(0,0,0,.4); }
+.record-token { position: absolute; left: 0; top: 0; display: block; width: max-content; max-width: 30vw; opacity: 0; white-space: normal; will-change: transform, opacity; pointer-events: none; }
+.record-char { display: inline-block; animation: recordLetterFloat 7s ease-in-out infinite alternate; animation-delay: var(--letter-delay, 0s); }
+.record-sub { position: absolute; left: 0; top: 0; width: max-content; max-width: 60vw; opacity: 0; font-family: inherit; font-size: calc(25 * var(--s)); letter-spacing: .08em; line-height: 1.6; color: rgba(239,255,249,.65); text-shadow: 0 calc(3 * var(--s)) calc(12 * var(--s)) rgba(0,0,0,.4); will-change: transform, opacity; pointer-events: none; }
 .record-voice.is-retiring .record-main { color: color-mix(in srgb, var(--accent, #39c5bb) 45%, #f2fff9); }
 .record-layer.is-paused .record-vinyl,
 .record-layer.is-paused .record-char { animation-play-state: paused; }
