@@ -175,6 +175,7 @@
   }
 
   function renderLyrics(lines) {
+    if (window.MikuRecordLyrics) window.MikuRecordLyrics.setLyrics(lines || []);
     el.lyrics.innerHTML = '';
     el.lyrics.style.transform = 'translateY(0px)';
     S.lrcIndex = -999;
@@ -2067,6 +2068,7 @@
     }
 
 
+    if (window.MikuRecordLyrics) window.MikuRecordLyrics.update(S.position + (S.lyricOffset || 0), S.playing);
     updateBubbles(dt);
     updateQingshu();
 
@@ -2311,7 +2313,8 @@
     { id: 'lumiere', name: '流光' },
     { id: 'scatter', name: '心象' },
     { id: 'tilt', name: '倾诉' },
-    { id: 'qingshu', name: '青书' }
+    { id: 'qingshu', name: '青书' },
+    { id: 'record', name: '唱片' }
   ];
 
   function applyLyricTheme(id) {
@@ -2321,6 +2324,7 @@
     document.body.className = document.body.className.split(/\s+/).filter(function (c) { return c.indexOf('theme-') !== 0; }).join(' ') + ' theme-' + id;
     try { localStorage.setItem('lyricTheme', id); } catch (e) {}
     S.lyricTheme = id;
+    if (window.MikuRecordLyrics) window.MikuRecordLyrics.setActive(id === 'record');
     if (S.lrc && S.lrc.length) renderLyrics(S.lrc);
     S.lrcIndex = -999;
     if (S.lrc && S.lrc.length) updateLyrics(S.position);
