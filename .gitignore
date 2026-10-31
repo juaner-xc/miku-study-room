@@ -7,3 +7,15 @@ _archive-now-playing/
 search.log
 *.log
 .DS_Store
+
+# Local credentials and runtime state
+**/ai.ini
+**/ai.ini.new
+**/WebViewCache*/
+**/window*.json
+**/diagnostics.json
+**/startup-error.txt
+**/safety-stop.txt
+**/install-status.txt
+experimental/desktop-overlay/.deps/
+experimental/desktop-overlay/dist/

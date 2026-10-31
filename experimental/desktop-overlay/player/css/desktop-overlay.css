@@ -1,0 +1,5 @@
+/* Keep the author's typography, lyric animation and capsule player untouched. */
+html, body { background: transparent !important; }
+.bg, .bg-still, .bg-fallback, .veil, .deco { display: none !important; }
+/* Background changes belong to Wallpaper Engine, not to this transparent layer. */
+#bgChips { display: none !important; }

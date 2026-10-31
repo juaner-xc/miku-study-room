@@ -40,7 +40,13 @@ New-Item -ItemType Directory -Force $bridgeDir | Out-Null
 Get-Process bridge -ErrorAction SilentlyContinue | Stop-Process -Force -ErrorAction SilentlyContinue
 Start-Sleep -Milliseconds 600
 
-Copy-Item (Join-Path $root 'bridge\*') $bridgeDir -Recurse -Force
+Get-ChildItem (Join-Path $root 'bridge') | Where-Object { $_.Name -ne 'ai.ini' } | ForEach-Object {
+    Copy-Item $_.FullName $bridgeDir -Recurse -Force
+}
+$aiFile = Join-Path $bridgeDir 'ai.ini'
+if (-not (Test-Path -LiteralPath $aiFile)) {
+    Set-Content -LiteralPath $aiFile -Value (@('enabled=0','base=','key=','model=') -join [Environment]::NewLine) -Encoding UTF8
+}
 
 # 4. 启动控制桥
 Start-Process (Join-Path $bridgeDir 'bridge.exe') -WindowStyle Hidden

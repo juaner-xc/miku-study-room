@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Miku Study Room</title>
+<link rel="stylesheet" href="css/style.css?v=20">
+<link rel="stylesheet" href="css/desktop-overlay.css">
+<script src="js/desktop-overlay.js"></script>
+</head>
+<body>
+
+  <div class="bg-fallback" aria-hidden="true"></div>
+  <img id="bgStill" class="bg-still" alt="">
+  <video id="bg" class="bg" muted loop playsinline autoplay preload="auto"></video>
+  <div class="veil" aria-hidden="true"></div>
+
+  <canvas id="spectrum" aria-hidden="true"></canvas>
+
+  <header class="hud">
+    <div class="brand">
+      <span class="dot"></span>
+      <span>MIKU&nbsp;·&nbsp;STUDY&nbsp;ROOM</span>
+    </div>
+
+
+    <div class="hud-right">
+      <button class="chip" id="guideBtn" title="使用引导">
+        <span>引导</span>
+      </button>
+      <button class="chip" id="themeBtn" title="切换歌词主题">
+        <span>主题</span>
+      </button>
+      <button class="chip" id="fontBtn" title="切换歌词字体">
+        <span>字体</span>
+      </button>
+      <div class="picker" id="modePicker"></div>
+      <div class="picker" id="fontPicker"></div>
+      <button class="chip" id="bgBtn" title="切换背景">
+        <svg viewBox="0 0 24 24"><path d="M4 5h16v14H4z" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M4 15l5-5 4 4 3-3 4 4" fill="none" stroke="currentColor" stroke-width="1.6"/></svg>
+        <span>背景</span>
+      </button>
+      <button class="chip" id="modeBtn" title="切换音乐来源">
+        <span class="mode-dot"></span>
+        <span id="modeText">内置</span>
+      </button>
+    </div>
+  </header>
+    <div id="qsLayer" class="qs-layer"></div>
+    <div id="bubbleLayer" class="bubble-layer"></div>
+
+  <canvas id="fxCanvas"></canvas>
+
+  <div class="deco" aria-hidden="true">
+    <span class="d-tri t1"></span>
+    <span class="d-tri t2"></span>
+    <span class="d-plus p1"></span>
+    <span class="d-plus p2"></span>
+    <span class="d-plus p3"></span>
+    <span class="d-ring r1"></span>
+    <span class="d-ring r2"></span>
+  </div>
+  <section class="lyrics-area" aria-live="polite">
+    <div class="lyrics-viewport" id="lyricsViewport">
+      <div class="lyrics" id="lyrics"></div>
+    </div>
+    <div class="lyrics-empty" id="lyricsEmpty">正在加载歌词…</div>
+  </section>
+
+  <div class="clean-cover" id="cleanCover" onclick="window.__exitClean && window.__exitClean()">
+    <img id="cleanCoverImg" alt="">
+    <button class="clean-eye" id="cleanEye" aria-label="恢复界面" title="恢复界面" onclick="event.stopPropagation(); window.__exitClean && window.__exitClean()">
+      <svg viewBox="0 0 24 24"><path d="M2.5 12s3.5-6 9.5-6 9.5 6 9.5 6-3.5 6-9.5 6-9.5-6-9.5-6z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><circle cx="12" cy="12" r="2.4" fill="none" stroke="currentColor" stroke-width="1.8"/></svg>
+    </button>
+  </div>
+
+  <footer class="player" id="player">
+    <div class="cover-wrap">
+      <img id="cover" alt="">
+      <div class="cover-ph" id="coverPh">♪</div>
+    </div>
+
+    <div class="meta">
+      <div class="meta-top">
+        <span class="title" id="title">等待播放</span>
+        <span class="source" id="source">内置</span>
+        <span class="bridge-warn" id="bridgeWarn" title="本地桥接未连接，请重新启动 bridge">桥接断开</span>
+      </div>
+      <div class="artist" id="artist">Miku Study Room</div>
+      <div class="bar"><div class="bar-fill" id="fill"></div></div>
+      <div class="times"><span id="pos">0:00</span><span id="dur">0:00</span></div>
+    </div>
+
+    <div class="ctrls">
+      <button class="ctl" id="prev" aria-label="上一首">
+        <svg viewBox="0 0 24 24"><rect x="5" y="5" width="2.4" height="14" rx="1.2"/><path d="M20 5.5v13a1 1 0 0 1-1.55.83l-9.4-6.5a1 1 0 0 1 0-1.66l9.4-6.5A1 1 0 0 1 20 5.5z"/></svg>
+      </button>
+      <button class="ctl play" id="play" aria-label="播放或暂停">
+        <svg class="i-play" viewBox="0 0 24 24"><path d="M8 5.5v13a1 1 0 0 0 1.53.85l10-6.5a1 1 0 0 0 0-1.7l-10-6.5A1 1 0 0 0 8 5.5z"/></svg>
+        <svg class="i-pause" viewBox="0 0 24 24"><path d="M7 5h3.4v14H7zM13.6 5H17v14h-3.4z"/></svg>
+      </button>
+      <button class="ctl" id="next" aria-label="下一首">
+        <svg viewBox="0 0 24 24"><rect x="16.8" y="5" width="2.4" height="14" rx="1.2"/><path d="M4 5.5v13a1 1 0 0 0 1.55.83l9.4-6.5a1 1 0 0 0 0-1.66l-9.4-6.5A1 1 0 0 0 4 5.5z"/></svg>
+      </button>
+      <button class="ctl" id="cleanBtn" aria-label="只看壁纸" title="只看壁纸（隐藏歌词与界面）">
+        <svg viewBox="0 0 24 24"><path d="M2.5 12s3.5-6 9.5-6 9.5 6 9.5 6-3.5 6-9.5 6-9.5-6-9.5-6z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><circle cx="12" cy="12" r="2.4" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M4 20L20 4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+      </button>
+      <button class="ctl list" id="listBtn" aria-label="歌单">
+        <svg viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h10" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+      </button>
+      <button class="ctl list" id="settingsBtn" aria-label="设置">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3.2" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M19.4 13a7.9 7.9 0 0 0 0-2l2-1.5-2-3.4-2.3 1a8 8 0 0 0-1.7-1L15 3h-4l-.4 2.6a8 8 0 0 0-1.7 1l-2.3-1-2 3.4L6.6 11a7.9 7.9 0 0 0 0 2l-2 1.5 2 3.4 2.3-1a8 8 0 0 0 1.7 1L11 21h4l.4-2.6a8 8 0 0 0 1.7-1l2.3 1 2-3.4z" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/></svg>
+      </button>
+    </div>
+  </footer>
+
+  <div class="start-hint" id="startHint">点播放器 ▶ 开始播放</div>
+<aside class="settings" id="settingsPanel">
+    <div class="settings-head">
+      <span>设置</span>
+      <button class="close" id="closeSettings" aria-label="关闭">×</button>
+    </div>
+    <div class="lyric-offset">
+      <button id="offMinus" title="歌词提前 0.1 秒">−0.1s</button>
+      <span id="offVal">0.0s</span>
+      <button id="offPlus" title="歌词再提前 0.1 秒">+0.1s</button>
+    </div>
+    <div class="ai-box">
+      <div class="ai-title">AI 主题</div>
+      <div id="aiState">读取中…</div>
+      <div class="ai-hint">编辑 bridge\ai.ini 后切换歌曲生效</div>
+    </div>
+    <div class="style-box">
+      <div class="style-title">歌词特效</div>
+      <div class="chip-row" id="modeChips"></div>
+      <div class="style-title">字体</div>
+      <div class="chip-row" id="fontChips"></div>
+      <div class="style-title">背景</div>
+      <div class="chip-row" id="bgChips"></div>
+      <div class="style-title">音乐来源</div>
+      <div class="chip-row" id="sourceChips"></div>
+      <div class="ai-hint">内置歌单 ID 可在 wallpaper/playlist.txt 修改</div>
+      <div class="style-title">AI</div>
+      <div class="chip-row"><button class="style-chip" id="aiOpen">打开设置（AI / 快捷键）</button></div>
+      <div class="style-title">工具</div>
+      <div class="chip-row">
+        <button class="style-chip" id="openGuide" onclick="window.__openGuide && window.__openGuide()">使用引导</button>
+        <button class="style-chip" id="restartBridge" onclick="window.__restartBridge && window.__restartBridge()">重启桥接</button>
+      </div>
+
+    </div>
+  </aside>
+
+  <aside class="drawer" id="drawer">
+    <div class="drawer-head">
+      <span id="drawerTitle">STUDY WITH MIKU · 歌单</span>
+      <button class="close" id="closeDrawer" aria-label="关闭">×</button>
+    </div>
+    <div class="scroll-pager">
+      <button id="pageUp" aria-label="上翻">▲ 上翻</button>
+      <button id="pageDown" aria-label="下翻">▼ 下翻</button>
+    </div>
+    <ol class="playlist" id="playlist"></ol>
+    <div class="scroll-rail" id="scrollRail"><div class="scroll-thumb" id="scrollThumb"></div></div>
+    <div class="drawer-foot" id="drawerFoot">来自网易云 · Meting</div>
+  </aside>
+
+  <div class="toast" id="toast" role="status"></div>
+
+  <audio id="audio" preload="auto"></audio>
+
+  <script src="js/app.js?v=229"></script>
+  <div class="onboard-mask" id="onboardMask">
+    <div class="onboard">
+      <div class="onboard-title">开始使用 Miku Study Room</div>
+      <div class="onboard-row"><span>本地桥接</span><b id="obBridge">检测中…</b><button id="obRetry">重试</button></div>
+      <div class="onboard-row"><span>AI 主题</span><b id="obAi">检测中…</b><button id="obAiOpen">打开 AI 设置</button></div>
+      <div class="onboard-row"><span>隐藏界面</span><em>点胶囊上的眼睛图标，只保留封面</em></div>
+      <button class="onboard-done" id="obDone">开始使用</button>
+    </div>
+  </div>
+
+</body>
+</html>

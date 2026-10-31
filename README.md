@@ -1,5 +1,7 @@
 # Miku Study Room · 音乐壁纸 v1.0
 
+> 本分支包含[透明桌面歌词层实验](experimental/desktop-overlay/README.md)。**存在切换壁纸后阻塞桌面点击的已知问题，尚未完成验收，不是稳定版本。** 原版壁纸说明保留如下；实验代码位于独立目录。
+
 一张会跟着网易云音乐变化的 Wallpaper Engine 网页壁纸：动态场景、居中滚动歌词、封面、进度、切歌。
 
 ![预览](preview.png)
